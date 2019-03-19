@@ -28,6 +28,11 @@ class Package
      */
     protected $packageName;
     /**
+     * 当前参数
+     * @var array
+     */
+    protected $data = [];
+    /**
      * 架构方法
      * @Author   Martinsun<syh@sunyonghong.com>
      * @DateTime 2019-03-15
@@ -85,10 +90,10 @@ class Package
         }
         // 存在自定义组件配置时进行合并
         if (isset($this->packages[$this->packageName])) {
-            $config                             = array_merge($this->getConfigure('vars'), $this->packages[$this->packageName]);
+            $config                             = array_merge($this->data, $this->packages[$this->packageName]);
             $this->packages[$this->packageName] = $config;
         } else {
-            $this->packages[$this->packageName] = $this->getConfigure('vars');
+            $this->packages[$this->packageName] = $this->data;
         }
         $this->assign($this->packages);
         return $this->view->fetch($this->viewPath . $template, $vars, $config);
@@ -106,5 +111,14 @@ class Package
         $this->view->assign($name, $value);
 
         return $this;
+    }
+
+    public function __get($name)
+    {
+        return $this->data[$name];
+    }
+    public function __set($name, $value)
+    {
+        $this->data[$name] = $value;
     }
 }
