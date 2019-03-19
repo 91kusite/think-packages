@@ -19,6 +19,6 @@
         "psr-4": {
             "think\\": "src/"
         },
-        "files": ["src/common.php"]
+        "files": ["src/common.php","src/command.php"]
     }
 }
