@@ -1,6 +1,7 @@
 <?php
 namespace think\command\packages;
 
+use app\common\helper\util\FileUtil;
 use think\Console;
 use think\console\Command;
 use think\console\Input;
@@ -23,6 +24,7 @@ class Remove extends Command
         $this->setName('package:remove')
             ->addArgument('name', Argument::REQUIRED, 'set package\'s name to uninstall.', null)
             ->addOption('yes', 'y', Option::VALUE_NONE, 'make sure.', null)
+            ->addOption('path', null, Option::VALUE_OPTIONAL, 'set package\'s path.', null)
             ->setDescription('Uninstall package.');
     }
     protected function execute(Input $input, Output $output)
@@ -50,6 +52,9 @@ class Remove extends Command
             $packageObj = new $class();
             $version    = $packageObj->getConfigure('version');
             $zip_path   = Env::get('root_path') . 'public' . self::DS . 'packages';
+            if ($input->hasOption('path')) {
+                $zip_path .= self::DS . $input->getOption('path');
+            }
             // 检测安装包是否存在
             if (!file_exists($zip_path . self::DS . $package_name . '.' . $version . '.zip')) {
                 // 提示是否备份
@@ -64,6 +69,9 @@ class Remove extends Command
         }
         try {
             $this->remove($package_path);
+            // 移除静态资源目录
+            $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public', 'static', 'packages', $package_name]);
+            FileUtil::unlinkDir($out_static_dir);
             // 更新组件安装日志
             $log                = [];
             $log[$package_name] = '';

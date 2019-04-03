@@ -1,6 +1,7 @@
 <?php
 namespace think\command\packages;
 
+use app\common\helper\util\FileUtil;
 use think\Console;
 use think\console\Command;
 use think\console\Input;
@@ -8,7 +9,6 @@ use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
 use think\Exception;
-use think\facade\Config;
 use think\facade\Env;
 
 class Install extends Command
@@ -26,6 +26,7 @@ class Install extends Command
             ->addOption('password', 'p', Option::VALUE_OPTIONAL, 'set package\'s read password.', null)
             ->addOption('rversion', 'r', Option::VALUE_OPTIONAL, 'set package\'s version.', null)
             ->addOption('yes', 'y', Option::VALUE_NONE, 'make sure.', null)
+            ->addOption('path', null, Option::VALUE_OPTIONAL, 'set package\'s path.', null)
             ->addOption('back', null, Option::VALUE_OPTIONAL, 'set package\'s backup number.', null)
             ->setDescription('Install package.')
             ->setHelp(<<<EOT
@@ -42,7 +43,10 @@ EOT
     protected function execute(Input $input, Output $output)
     {
         // 组件包检测
-        $zip_path    = Env::get('root_path') . 'public' . self::DS . 'packages';
+        $zip_path = Env::get('root_path') . 'public' . self::DS . 'packages';
+        if ($input->hasOption('path')) {
+            $zip_path .= self::DS . $input->getOption('path');
+        }
         $package_name = trim($input->getArgument('name'));
 
         if (!$package_name) {
@@ -61,10 +65,10 @@ EOT
             }
             // 备份已安装版本
             $packname = $this->backupToPackages($output, $zip_path, $package_name);
-           	if($packname === false){
-           		return false;
-           	}
-            $is_sure  = true;
+            if ($packname === false) {
+                return false;
+            }
+            $is_sure = true;
         }
 
         $zip_name = null;
@@ -109,24 +113,39 @@ EOT
         // 执行解包
         try {
             // 开始解包命令处理
-            $command_params = ['public' . self::DS . 'packages' . self::DS . $zip_name];
+            $path = 'public' . self::DS . 'packages';
+            if ($input->hasOption('path')) {
+                $path .= self::DS . $input->getOption('path');
+            }
+            $command_params = [$path . self::DS . $zip_name];
             if ($input->hasOption('password')) {
                 // 存在解包命令
                 $command_params[] = '--password=' . $input->getOption('password');
             }
             // 输出目录
-            $command_params[] = '--outpath=' . implode(self::DS, ['src', 'packages', $package_name]);
+            $outpath          = implode(self::DS, ['src', 'packages', $package_name]);
+            $command_params[] = '--outpath=' . $outpath;
             $log              = [];
-
             Console::call('zip:unpack', $command_params);
+
             // 当前安装包信息
             $class = 'packages\\' . $package_name . '\\' . ucfirst($package_name);
-	        if (class_exists($class)) {
-	            $packageObj = new $class();
-	            $version   = $packageObj->getConfigure('version');
-	        } else {
-	            throw new Exception('install error');
-	        }
+            if (class_exists($class)) {
+                $packageObj = new $class();
+                $version    = $packageObj->getConfigure('version');
+            } else {
+                throw new Exception('install error');
+            }
+
+            // 静态文件处理
+            $static_dir = Env::get('root_path') . self::DS . $outpath . self::DS . 'static';
+            if (is_dir($static_dir)) {
+                $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public','static', 'packages', $package_name]);
+                if (!is_dir($out_static_dir)) {
+                    mkdir($out_static_dir, 0755, true);
+                }
+                FileUtil::moveDir($static_dir, $out_static_dir, true);
+            }
 
             $log[$package_name] = $version;
         } catch (Exception $e) {
@@ -134,7 +153,7 @@ EOT
             $this->remove(PACKAGE_PATH . $package_name);
             // 恢复备份
             $this->rollbackToPackages($zip_path, $packname, $package_name);
-            $output->writeln("<error>Install " . $package_name . " package error,Please try again.</error>");
+            $output->writeln("<error>Install " . $package_name . " package error,Please try again.Error message:".$e->getMessage()."</error>");
             $log = [];
             return false;
         } finally {
