@@ -15,9 +15,9 @@ if (!is_dir(PACKAGE_PATH)) {
 
 // 注册类的根命名空间
 Loader::addNamespace('packages', PACKAGE_PATH);
-
-Route::any('/packages/:package/:action', function ($package, $action) {
-    $classname = 'packages\\' . strtolower($package) . '\\' . ucfirst($package);
+// 注册组件接口路由
+Route::any('/packages/:package/:service/:action', function ($package,$service, $action) {
+    $classname = 'packages\\' . $package . '\\service\\' . ucfirst($service);
     if ($classname) {
         $class = new $classname();
         if (is_callable([$class, $action])) {
