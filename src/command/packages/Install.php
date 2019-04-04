@@ -138,14 +138,14 @@ EOT
             }
 
             // 静态文件处理
-            $static_dir = Env::get('root_path') . self::DS . $outpath . self::DS . 'static';
-            if (is_dir($static_dir)) {
-                $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public','static', 'packages', $package_name]);
-                if (!is_dir($out_static_dir)) {
-                    mkdir($out_static_dir, 0755, true);
-                }
-                FileUtil::moveDir($static_dir, $out_static_dir, true);
-            }
+            // $static_dir = Env::get('root_path') . self::DS . $outpath . self::DS . 'static';
+            // if (is_dir($static_dir)) {
+            //     $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public','static', 'packages', $package_name]);
+            //     if (!is_dir($out_static_dir)) {
+            //         mkdir($out_static_dir, 0755, true);
+            //     }
+            //     FileUtil::moveDir($static_dir, $out_static_dir, true);
+            // }
 
             $log[$package_name] = $version;
         } catch (Exception $e) {

@@ -70,8 +70,8 @@ class Remove extends Command
         try {
             $this->remove($package_path);
             // 移除静态资源目录
-            $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public', 'static', 'packages', $package_name]);
-            FileUtil::unlinkDir($out_static_dir);
+            // $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public', 'static', 'packages', $package_name]);
+            // FileUtil::unlinkDir($out_static_dir);
             // 更新组件安装日志
             $log                = [];
             $log[$package_name] = '';
