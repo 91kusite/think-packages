@@ -10,7 +10,7 @@ class Package extends TagLib
      */
     protected $tags = [
         // 标签定义： attr 属性列表 close 是否闭合（0 或者1 默认1） alias 标签别名 level 嵌套层次
-        'show' => ['attr' => 'name', 'close' => 1], //闭合标签，默认为不闭合
+        'show' => ['attr' => 'name,hooks,template', 'close' => 1], //闭合标签，默认为不闭合
 
     ];
     /**
@@ -29,8 +29,10 @@ class Package extends TagLib
         // 获取组件模板
         $class = 'packages\\' . $package . '\\' . ucfirst($package);
         if (class_exists($class)) {
-            $packageObj = new $class();
-            $template   = $packageObj->run();
+            $packageObj   = new $class();
+            $templateFile = (isset($tag['template']) && $tag['template']) ? $tag['template'] : 'default';
+            $hooks        = (isset($tag['hooks']) && $tag['hooks']) ? $tag['hooks'] : '';
+            $template     = $packageObj->run($templateFile, $hooks);
         } else {
             $template = '';
         }
