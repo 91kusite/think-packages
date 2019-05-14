@@ -2,6 +2,7 @@
 namespace think\taglib\packages;
 
 use think\template\TagLib;
+use think\Container;
 
 class Package extends TagLib
 {
@@ -24,7 +25,7 @@ class Package extends TagLib
     public function tagShow($tag, $content)
     {
         $package = $tag['name'];
-        // TODO:检测组件状态
+        $package = Container::get('view')->$package;
         // TODO:其他操作
         // 获取组件模板
         $class = 'packages\\' . $package . '\\' . ucfirst($package);
