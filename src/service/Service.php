@@ -72,7 +72,6 @@ class Service
      */
     public static function getInstance($package = null, $layer = null, $namespace = null)
     {
-
         $classname = CheckService::isCallable($package);
         if (false === $classname) {
             // 不能调用,抛出错误

@@ -1,8 +1,11 @@
 <?php
 namespace kusite\package\libs\tag;
 
-use think\template\TagLib;
+use kusite\package\exception\NotCallableException;
+use kusite\package\exception\NotFoundException;
+use kusite\package\service\Service as packageService;
 use think\Container;
+use think\template\TagLib;
 
 class Package extends TagLib
 {
@@ -25,16 +28,17 @@ class Package extends TagLib
     public function tagShow($tag, $content)
     {
         $package = $tag['name'];
-        $package = strtolower(Container::get('view')->$package);
-        // TODO:其他操作
+        $package = Container::get('view')->$package;
         // 获取组件模板
-        $class = 'packages\\' . $$package . '\\controller\\' . ucfirst($package);
-        if (class_exists($class)) {
-            $packageObj   = new $class();
+        try {
+            $packageObj   = packageService::getInstance($package, 'controller');
             $templateFile = (isset($tag['template']) && $tag['template']) ? $tag['template'] : 'default';
             $hooks        = (isset($tag['hooks']) && $tag['hooks']) ? $tag['hooks'] : '';
             $template     = $packageObj->run($templateFile, $hooks);
-        } else {
+        } catch (NotCallableException $e) {
+            echo $e->getMessage();exit;
+            $template = '';
+        } catch (NotFoundException $e) {
             $template = '';
         }
         $parse = '<div ';

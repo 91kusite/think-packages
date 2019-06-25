@@ -15,7 +15,7 @@ class CheckService
      */
     public static function isExist($package): bool
     {
-        $class = ParseService::parseName($package);
+        $class = ParseService::parsetoController($package);
 
         return class_exists($class);
     }
@@ -32,6 +32,7 @@ class CheckService
         if (!self::isExist($package)) {
             return false;
         }
+
         $class = ParseService::parseName($package);
         $pkg   = new $class();
 
