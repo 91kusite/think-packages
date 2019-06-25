@@ -3,8 +3,6 @@ namespace kusite\package\service;
 
 use kusite\package\service\ParseService;
 
-// use think\Container;
-
 class CheckService
 {
 
@@ -13,7 +11,7 @@ class CheckService
      * @Author   Martinsun<syh@sunyonghong.com>
      * @DateTime 2019-06-24
      * @param    string $package 组件名称
-     * @return   boolean                                 [description]
+     * @return   boolean
      */
     public static function isExist($package): bool
     {
@@ -26,8 +24,8 @@ class CheckService
      * 检测组件是否可调用,只有组件状态正常时可以用
      * @Author   Martinsun<syh@sunyonghong.com>
      * @DateTime 2019-06-24
-     * @param    [type]                         $package [description]
-     * @return   boolean                                 [description]
+     * @param    string $package   组件名称
+     * @return   boolean
      */
     public static function isCallable($package): bool
     {
@@ -41,32 +39,19 @@ class CheckService
     }
 
     /**
-     * 组件注册,将组件统一注入到容器中,供全局使用
+     * 检测组件类是否存在
      * @Author   Martinsun<syh@sunyonghong.com>
-     * @DateTime 2019-06-24
-     * @param    [type]                         $package [description]
-     * @return   [type]                                  [description]
+     * @DateTime 2019-06-25
+     * @param    string $package   组件名称
+     * @param    string $layer     类分层名称 如controller model service等
+     * @param    string $namespace 命名空间,可以是根命名,也可以是基于分层后的命名
+     * @return   boolean
      */
-    public static function register($package)
+    public static function isExistClass($package = null, $layer = null, $namespace = null): bool
     {
-        $a = '调用获取A组件实例方法';
-        if ($a) {
-            // 正常逻辑
-            // 在这还要调用C组件
-            $c = '调用C组件实例';
-            if ($c) {
-                // C组件正常
-            } else {
-                // C组件异常
-            }
-        } else {
-            // A组件异常
-        }
+        $namespace = ParseService::parse($package, $layer, $namespace);
 
-        $a    = '调用获取A组件实例方法';
-        $ret  = $a->get();
-        $c    = '调用C组件实例';
-        $data = $c->getRet($ret);
+        return class_exists($namespace);
     }
 
 }

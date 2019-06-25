@@ -3,6 +3,7 @@
 namespace kusite\package\libs;
 
 use think\facade\Config;
+use kusite\package\service\ParseService;
 
 class Package
 {
@@ -23,10 +24,10 @@ class Package
      */
     protected $packages;
     /**
-     * 当前组件名称
+     * 当前组件信息
      * @var string
      */
-    protected $packageName;
+    protected $info;
     /**
      * 当前参数
      * @var array
@@ -40,7 +41,7 @@ class Package
     public function __construct()
     {
         $this->view        = app('view');
-        $this->packageName = $this->getConfigure('name');
+        $this->packageName =ParseService::parseNamespace(static::class,'name');
         $this->viewPath    = PACKAGE_PATH . $this->packageName . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
         $this->packages    = isset($this->view->packages) ? $this->view->packages : [];
         // 执行初始化操作

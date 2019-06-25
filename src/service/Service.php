@@ -3,6 +3,8 @@ namespace kusite\package\service;
 
 use kusite\package\service\ParseService;
 use kusite\package\service\CheckService;
+use kusite\package\exception\NotCallableException;
+use kusite\package\exception\NotFoundException;
 
 class Service
 {
@@ -41,12 +43,30 @@ class Service
     	return Service::getInstance($package);
     }
 
+    /**
+     * [getInstance description]
+     * @Author   Martinsun<syh@sunyonghong.com>
+     * @DateTime 2019-06-25
+     * @param    string $package   组件名称
+     * @param    string $layer     类分层名称 如controller model service等
+     * @param    string $namespace 命名空间,可以是根命名,也可以是基于分层后的命名
+     * @return   [type]                                    [description]
+     */
     public static function getInstance($package = null, $layer = null, $namespace = null)
     {
         $classname = CheckService::isCallable($package);
         if(false === $classname){
         	// 不能调用,抛出错误
-        	throw new Exception("Error Processing Request", 1);
+        	throw new NotCallableException('目标组件不可调用');
         }
+
+        $namespace = ParseService::parse($package, $layer, $namespace);
+
+        // 当前组件模块实例
+        if(false == CheckService::isExistClass(null, null, $namespace )){
+            throw new NotFoundException('目标组件内不存在该接口');
+        }
+
+        return new $namespace;
     }
 }

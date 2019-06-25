@@ -3,5 +3,5 @@ namespace kusite\package\exception;
 
 use kusite\package\exception\ServiceException;
 
-class NotCallableException extends ServiceException
+class NotFoundException extends ServiceException
 {}

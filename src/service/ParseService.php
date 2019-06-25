@@ -57,4 +57,27 @@ class ParseService
         return $classname;
     }
 
+    /**
+     * 解析命名空间
+     * @Author   Martinsun<syh@sunyonghong.com>
+     * @DateTime 2019-06-25
+     * @return   [type]                         [description]
+     */
+    public static function parseNamespace($namespace, $key = null)
+    {
+        // 指定了完整的根命名空间
+        if (substr($namespace, 0, 1) == '\\' || substr($namespace, 0, 8) == 'packages') {
+            // 完成的类
+            $_explode = explode('\\', $namespace);
+            $ret      = [
+                'name'  => $_explode[1],
+                'layer' => $_explode[2],
+                'class' => end($_explode),
+            ];
+            return $key ? (isset($ret[$key]) ? $ret[$key] : null) : $ret;
+        } else {
+            return null;
+        }
+    }
+
 }
