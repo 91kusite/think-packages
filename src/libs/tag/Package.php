@@ -36,7 +36,6 @@ class Package extends TagLib
             $hooks        = (isset($tag['hooks']) && $tag['hooks']) ? $tag['hooks'] : '';
             $template     = $packageObj->run($templateFile, $hooks);
         } catch (NotCallableException $e) {
-            echo $e->getMessage();exit;
             $template = '';
         } catch (NotFoundException $e) {
             $template = '';
