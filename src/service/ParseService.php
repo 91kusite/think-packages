@@ -61,7 +61,9 @@ class ParseService
      * 解析命名空间
      * @Author   Martinsun<syh@sunyonghong.com>
      * @DateTime 2019-06-25
-     * @return   [type]                         [description]
+     * @param    string $namespace 所需解析的命名空间完整信息
+     * @param    获取下标的类 $key 可选 name:组件名称 layer:组件所在分层 class:当前调用的类
+     * @return
      */
     public static function parseNamespace($namespace, $key = null)
     {

@@ -35,8 +35,8 @@ class Service
      * 获取组件入口类
      * @Author   Martinsun<syh@sunyonghong.com>
      * @DateTime 2019-06-25
-     * @param    [type]                         $package [description]
-     * @return   [type]                                  [description]
+     * @param    string $package   组件名称
+     * @return 
      */
     public static function get($package = null)
     {
@@ -50,7 +50,7 @@ class Service
      * @param    string $package   组件名称
      * @param    string $layer     类分层名称 如controller model service等
      * @param    string $namespace 命名空间,可以是根命名,也可以是基于分层后的命名
-     * @return   [type]                                    [description]
+     * @return 
      */
     public static function getInstance($package = null, $layer = null, $namespace = null)
     {
@@ -64,7 +64,7 @@ class Service
 
         // 当前组件模块实例
         if(false == CheckService::isExistClass(null, null, $namespace )){
-            throw new NotFoundException('目标组件内不存在该接口');
+            throw new NotFoundException('目标组件内不存在该接口类');
         }
 
         return new $namespace;
