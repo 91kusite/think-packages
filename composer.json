@@ -17,7 +17,7 @@
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "think\\": "src/"
+            "kusite\\package\\": "src/"
         },
         "files": ["src/common.php","src/command.php"]
     }

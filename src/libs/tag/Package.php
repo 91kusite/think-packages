@@ -1,5 +1,5 @@
 <?php
-namespace think\taglib\packages;
+namespace kusite\package\libs\tag;
 
 use think\template\TagLib;
 use think\Container;
@@ -25,10 +25,10 @@ class Package extends TagLib
     public function tagShow($tag, $content)
     {
         $package = $tag['name'];
-        $package = Container::get('view')->$package;
+        $package = strtolower(Container::get('view')->$package);
         // TODO:其他操作
         // 获取组件模板
-        $class = 'packages\\' . $package . '\\' . ucfirst($package);
+        $class = 'packages\\' . $$package . '\\controller\\' . ucfirst($package);
         if (class_exists($class)) {
             $packageObj   = new $class();
             $templateFile = (isset($tag['template']) && $tag['template']) ? $tag['template'] : 'default';

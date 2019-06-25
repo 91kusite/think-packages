@@ -1,6 +1,6 @@
 <?php
 
-namespace think\packages;
+namespace kusite\package\libs;
 
 use think\facade\Config;
 
@@ -45,6 +45,7 @@ class Package
         $this->packages    = isset($this->view->packages) ? $this->view->packages : [];
         // 执行初始化操作
         $this->initialize();
+
     }
 
     /**
@@ -55,22 +56,6 @@ class Package
      */
     protected function initialize()
     {}
-
-    /**
-     * 获取配置
-     * @Author   Martinsun<syh@sunyonghong.com>
-     * @DateTime 2019-03-15
-     * @param    [type]                         $key [description]
-     * @return   [type]                              [description]
-     */
-    public function getConfigure($key = null)
-    {
-        $config = $this->configure();
-        if (is_null($key)) {
-            return $config;
-        }
-        return isset($config[$key]) ? $config[$key] : null;
-    }
 
     /**
      * 加载模板输出

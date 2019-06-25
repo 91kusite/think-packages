@@ -1,5 +1,5 @@
 <?php
-namespace think\command\packages;
+namespace kusite\package\command;
 
 use think\Console;
 use think\console\Command;
