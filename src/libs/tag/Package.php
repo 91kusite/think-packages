@@ -5,6 +5,7 @@ use kusite\package\exception\NotCallableException;
 use kusite\package\exception\NotFoundException;
 use kusite\package\service\Service as packageService;
 use think\Container;
+use think\Loader;
 use think\template\TagLib;
 
 class Package extends TagLib
@@ -34,7 +35,10 @@ class Package extends TagLib
             $packageObj   = packageService::getInstance($package, 'controller');
             $templateFile = (isset($tag['template']) && $tag['template']) ? $tag['template'] : 'default';
             $hooks        = (isset($tag['hooks']) && $tag['hooks']) ? $tag['hooks'] : '';
-            $template     = $packageObj->run($templateFile, $hooks);
+            $name         = str_replace('_', '-', Loader::parseName($package, 0)) . '-' . $templateFile;
+
+            $template = $packageObj->run($templateFile, $hooks);
+            $template = '<' . $name . ' hooks="' . $hooks . '">' . $template . '</' . $name . '>';
         } catch (NotCallableException $e) {
             $template = '';
         } catch (NotFoundException $e) {
