@@ -27,3 +27,16 @@ Route::any('/packages/:type/:package/:service/:action', function ($type, $packag
 
     return Response::create(['data' => ['error_code' => 404], 'code' => 0, 'msg' => '请求组件不存在或异常'], 'json', 200);
 });
+
+// 注册组件后台访问路由
+Route::any('/sp/admin/:type/:package/:service/:action', function ($type, $package, $service, $action) {
+    $classname = 'packages\\' . $package . '\\' . $type . '\\' . ucfirst($service);
+    if ($classname) {
+        $class = new $classname();
+        if (is_callable([$class, $action])) {
+            return $class->$action();
+        }
+    }
+
+    return Response::create(['data' => ['error_code' => 404], 'code' => 0, 'msg' => '请求组件不存在或异常'], 'json', 200);
+})->middleware([app\admin\middleware\CheckAxiosRequest::class, app\admin\middleware\BindLoginUser::class]);
