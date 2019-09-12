@@ -39,4 +39,4 @@ Route::any('/sp/admin/:type/:package/:service/:action', function ($type, $packag
     }
 
     return Response::create(['data' => ['error_code' => 404], 'code' => 0, 'msg' => '请求组件不存在或异常'], 'json', 200);
-})->middleware([app\admin\middleware\CheckAxiosRequest::class, app\admin\middleware\BindLoginUser::class]);
+})->middleware([app\admin\middleware\CheckAxiosRequest::class, app\admin\middleware\BindLoginUser::class,kusite\package\libs\middleware\RegisterPackage::class]);
