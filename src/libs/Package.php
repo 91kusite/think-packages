@@ -30,6 +30,11 @@ class Package
      */
     protected $info;
     /**
+     * 自动定位模板
+     * @var boolean
+     */
+    protected $useAutoTemplate = true;
+    /**
      * 当前参数
      * @var array
      */
@@ -69,10 +74,14 @@ class Package
      */
     protected function fetch($template = '', $vars = [], $config = [])
     {
-        // 模板定位
-        $controller = Request::controller();
-        $action     = Request::action(true);
-        $template   = ($controller && $action) ? parse_name($controller) . '/' . parse_name($action) : 'default.html';
+        if ($this->useAutoTemplate) {
+            // 模板定位
+            $controller = Request::controller();
+            $action     = Request::action(true);
+            $template   = ($controller && $action) ? parse_name($controller) . '/' . parse_name($action) : 'default.html';
+        } else {
+            $template = $template ?: 'default.html';
+        }
 
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
             // 获取模板文件名
