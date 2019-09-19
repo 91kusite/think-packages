@@ -133,6 +133,15 @@ EOT
             if (class_exists($class)) {
                 $packageObj = new $class();
                 $version    = $packageObj->getConfigure('version');
+                // 复制目录
+                $dirs        = $this->getCopyDir();
+                $package_dir = PACKAGE_PATH . $package_name . self::DS;
+                foreach ($dirs as $dir => $todir) {
+                    if (is_dir($package_dir . $dir)) {
+                        FileUtil::copyDir($package_dir . $dir, $todir, true);
+                    }
+                }
+
             } else {
                 throw new Exception('install error');
             }
@@ -150,10 +159,10 @@ EOT
             $log[$package_name] = $version;
         } catch (Exception $e) {
             // 删除目录及文件
-            $this->remove(PACKAGE_PATH . $package_name);
+            FileUtil::unlinkDir(PACKAGE_PATH . $package_name);
             // 恢复备份
             $this->rollbackToPackages($zip_path, $packname, $package_name);
-            $output->writeln("<error>Install " . $package_name . " package error,Please try again.Error message:".$e->getMessage()."</error>");
+            $output->writeln("<error>Install " . $package_name . " package error,Please try again.Error message:" . $e->getMessage() . "</error>");
             $log = [];
             return false;
         } finally {
@@ -170,37 +179,6 @@ EOT
             }
         }
 
-    }
-
-    /**
-     * 执行删除目录和文件的方法
-     * @Author   MartinSun<syh@sunyonghong.com>
-     * @DateTime 2019-02-26
-     * @param    string     $path 需要删除的目录或文件
-     * @return
-     */
-    protected function remove($path)
-    {
-        // 打开目录
-        $dh = opendir($path);
-        // 循环读取目录
-        while (($file = readdir($dh)) !== false) {
-            // 过滤掉当前目录'.'和上一级目录'..'
-            if ($file == '.' || $file == '..') {
-                continue;
-            }
-
-            // 如果该文件是一个目录，则进入递归
-            if (is_dir($path . '/' . $file)) {
-                $this->remove($path . '/' . $file);
-            } else {
-                // 如果不是一个目录，则将其删除
-                unlink($path . '/' . $file);
-            }
-        }
-        // 退出循环后(此时已经删除所有了文件)，关闭目录并删除
-        closedir($dh);
-        rmdir($path);
     }
 
     /**
@@ -255,6 +233,20 @@ EOT
                 unlink($savepath . self::DS . $packname);
             }
         }
+    }
+
+    /**
+     * 获取待复制的目录
+     * @Author   Martinsun<syh@sunyonghong.com>
+     * @DateTime 2019-09-19
+     * @return   [type]                         [description]
+     */
+    public function getCopyDir()
+    {
+        return [
+            'admin'  => Env::get('app_path') . self::DS . 'admin',
+            'public' => Env::get('root_path') . self::DS . 'public',
+        ];
     }
 
 }

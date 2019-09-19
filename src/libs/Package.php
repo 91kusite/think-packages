@@ -2,8 +2,9 @@
 
 namespace kusite\package\libs;
 
-use think\facade\Config;
 use kusite\package\service\ParseService;
+use think\facade\Config;
+use think\facade\Request;
 
 class Package
 {
@@ -41,7 +42,7 @@ class Package
     public function __construct()
     {
         $this->view        = app('view');
-        $this->packageName =ParseService::parseNamespace(static::class,'name');
+        $this->packageName = ParseService::parseNamespace(static::class, 'name');
         $this->viewPath    = PACKAGE_PATH . $this->packageName . DIRECTORY_SEPARATOR . 'view' . DIRECTORY_SEPARATOR;
         $this->packages    = isset($this->view->packages) ? $this->view->packages : [];
         // 执行初始化操作
@@ -68,8 +69,11 @@ class Package
      */
     protected function fetch($template = '', $vars = [], $config = [])
     {
-        // 指定模板时,必须带后缀
-        $template = $template ?: 'default.html';
+        // 模板定位
+        $controller = Request::controller();
+        $action     = Request::action(true);
+        $template   = ($controller && $action) ? parse_name($controller) . '/' . parse_name($action) : 'default.html';
+
         if ('' == pathinfo($template, PATHINFO_EXTENSION)) {
             // 获取模板文件名
             $template = $template . '.' . Config::get('template.view_suffix');
@@ -82,6 +86,7 @@ class Package
             $this->packages[$this->packageName] = $this->data;
         }
         $this->assign($this->packages);
+
         return $this->view->fetch($this->viewPath . $template, $vars, $config);
     }
 

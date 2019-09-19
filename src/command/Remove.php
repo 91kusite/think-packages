@@ -68,7 +68,9 @@ class Remove extends Command
             }
         }
         try {
-            $this->remove($package_path);
+            $files = $this->getCopyFiles($this->getCopyDir($package_path));
+            $this->removeCopyFiles($files);
+            FileUtil::unlinkDir($package_path);
             // 移除静态资源目录
             // $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public', 'static', 'packages', $package_name]);
             // FileUtil::unlinkDir($out_static_dir);
@@ -102,28 +104,21 @@ class Remove extends Command
      * @param    string     $path 需要删除的目录或文件
      * @return
      */
-    protected function remove($path)
+    protected function removeCopyFiles($files)
     {
-        // 打开目录
-        $dh = opendir($path);
-        // 循环读取目录
-        while (($file = readdir($dh)) !== false) {
-            // 过滤掉当前目录'.'和上一级目录'..'
-            if ($file == '.' || $file == '..') {
-                continue;
-            }
-
-            // 如果该文件是一个目录，则进入递归
-            if (is_dir($path . '/' . $file)) {
-                $this->remove($path . '/' . $file);
-            } else {
-                // 如果不是一个目录，则将其删除
-                unlink($path . '/' . $file);
-            }
+        foreach ($files as $file) {
+            FileUtil::unlinkFile($file);
+            $this->removeEmptyDir(dirname($file));
         }
-        // 退出循环后(此时已经删除所有了文件)，关闭目录并删除
-        closedir($dh);
-        rmdir($path);
+    }
+
+    protected function removeEmptyDir($dir)
+    {
+        // 只包含.和..,判断为空
+        if (count(scandir($dir)) == 2) {
+            FileUtil::unlinkDir($dir);
+            $this->removeEmptyDir(dirname($dir));
+        }
     }
 
     /**
@@ -157,6 +152,49 @@ class Remove extends Command
             $output->writeln("<error>Backup error package:" . $package_name . ".Please try again.</error>");
         }
         return false;
+    }
+
+    public function getCopyFiles($package_dir)
+    {
+        static $files;
+        foreach ($package_dir as $path => $topath) {
+            // 打开目录
+            $dh = opendir($path);
+            // 循环读取目录
+            while (($file = readdir($dh)) !== false) {
+
+                // 过滤掉当前目录'.'和上一级目录'..'
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+
+                // 如果该文件是一个目录，则进入递归
+                if (is_dir($path . self::DS . $file)) {
+                    $this->getCopyFiles([$path . self::DS . $file => $topath . self::DS . $file]);
+                } else {
+                    // 如果不是一个目录，则将其删除
+                    $files[$path . self::DS . $file] = $topath . self::DS . $file;
+                }
+            }
+            // 退出循环后(此时已经删除所有了文件)，关闭目录并删除
+            closedir($dh);
+        }
+
+        return $files;
+    }
+
+    /**
+     * 获取待复制的目录
+     * @Author   Martinsun<syh@sunyonghong.com>
+     * @DateTime 2019-09-19
+     * @return   [type]                         [description]
+     */
+    public function getCopyDir($package_dir)
+    {
+        return [
+            $package_dir . self::DS . 'admin'  => Env::get('app_path') . self::DS . 'admin',
+            $package_dir . self::DS . 'public' => Env::get('root_path') . self::DS . 'public',
+        ];
     }
 
 }
