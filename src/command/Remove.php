@@ -8,6 +8,7 @@ use think\console\Input;
 use think\console\input\Argument;
 use think\console\input\Option;
 use think\console\Output;
+use think\facade\Cache;
 use think\facade\Env;
 
 class Remove extends Command
@@ -50,8 +51,13 @@ class Remove extends Command
         $class = 'packages\\' . $package_name . '\\' . ucfirst($package_name);
         if (class_exists($class)) {
             $packageObj = new $class();
-            $version    = $packageObj->getConfigure('version');
-            $zip_path   = Env::get('root_path') . 'public' . self::DS . 'packages';
+            // 如果为系统组件,则不支持卸载
+            if ($packageObj->getConfigure('is_system') == 1) {
+                $output->writeln("<error>This is a system package and does not support uninstallation.</error>");
+                return false;
+            }
+            $version  = $packageObj->getConfigure('version');
+            $zip_path = Env::get('root_path') . 'public' . self::DS . 'packages';
             if ($input->hasOption('path')) {
                 $zip_path .= self::DS . $input->getOption('path');
             }
@@ -68,7 +74,11 @@ class Remove extends Command
             }
         }
         try {
-            $files = $this->getCopyFiles($this->getCopyDir($package_path));
+            $packageObj = new $class();
+            // 执行组件卸载
+            $packageObj->uninstall();
+            $packagename = $packageObj->getPackageName();
+            $files       = $this->getCopyFiles($this->getCopyDir($package_path));
             $this->removeCopyFiles($files);
             FileUtil::unlinkDir($package_path);
             // 移除静态资源目录
@@ -91,6 +101,7 @@ class Remove extends Command
                 $default = include $installed_file;
                 $log     = array_diff_key($default, $log);
                 file_put_contents($installed_file, "<?php \r\n return " . var_export_min($log, true) . " \r\n ?>");
+                Cache::rm('package_' . $packagename);
             }
         }
         $output->writeln("<info>Remove package " . $package_name . " success!</info>");

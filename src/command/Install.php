@@ -132,6 +132,7 @@ EOT
             $class = 'packages\\' . $package_name . '\\' . ucfirst($package_name);
             if (class_exists($class)) {
                 $packageObj = new $class();
+                
                 $version    = $packageObj->getConfigure('version');
                 // 复制目录
                 $dirs        = $this->getCopyDir();
@@ -141,6 +142,9 @@ EOT
                         FileUtil::copyDir($package_dir . $dir, $todir, true);
                     }
                 }
+
+                // 执行组件安装自定义方法
+                $packageObj->install();
 
             } else {
                 throw new Exception('install error');

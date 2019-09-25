@@ -71,4 +71,16 @@ abstract class Install
 
         return isset($config[$key]) ? $config[$key] : null;
     }
+
+    //必须实现安装
+    abstract public function install();
+
+    //必须实现卸载方法
+    abstract public function uninstall();
+
+    //必须实现启用方法
+    abstract public function enable();
+
+    //必须实现禁用方法
+    abstract public function disable();
 }
