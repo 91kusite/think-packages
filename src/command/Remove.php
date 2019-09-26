@@ -10,6 +10,7 @@ use think\console\input\Option;
 use think\console\Output;
 use think\facade\Cache;
 use think\facade\Env;
+use kusite\package\libs\Db as PackageDb;
 
 class Remove extends Command
 {
@@ -75,6 +76,8 @@ class Remove extends Command
         }
         try {
             $packageObj = new $class();
+            // 执行卸载sql
+            PackageDb::executeSqlFile($package_path.self::DS.'uninstall.sql');
             // 执行组件卸载
             $packageObj->uninstall();
             $packagename = $packageObj->getPackageName();
@@ -150,8 +153,7 @@ class Remove extends Command
         // 打包路径
         $command_params[] = implode(self::DS, ['src', 'packages', $package_name]);
         // 包保存路径
-        $outpath          = 'public' . self::DS . 'packages' . self::DS;
-        $command_params[] = '--outpath=' . $outpath;
+        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'),'',$savepath).self::DS;
         // 执行解包
         try {
             Console::call('zip:pack', $command_params);

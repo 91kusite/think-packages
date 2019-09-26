@@ -10,6 +10,7 @@ use think\console\input\Option;
 use think\console\Output;
 use think\Exception;
 use think\facade\Env;
+use kusite\package\libs\Db as PackageDb;
 
 class Install extends Command
 {
@@ -65,6 +66,7 @@ EOT
             }
             // 备份已安装版本
             $packname = $this->backupToPackages($output, $zip_path, $package_name);
+
             if ($packname === false) {
                 return false;
             }
@@ -109,7 +111,7 @@ EOT
         }
         $output->writeln("<info>Please waiting...</info>");
         // 备份成功,删除目录及文件
-        $packname && $this->remove(PACKAGE_PATH . $package_name);
+        $packname && FileUtil::unlinkDir(PACKAGE_PATH . $package_name);
         // 执行解包
         try {
             // 开始解包命令处理
@@ -143,6 +145,8 @@ EOT
                     }
                 }
 
+                // 导入安装sql
+                PackageDb::executeSqlFile($package_dir.'install.sql');
                 // 执行组件安装自定义方法
                 $packageObj->install();
 
@@ -203,8 +207,7 @@ EOT
         // 打包路径
         $command_params[] = implode(self::DS, ['src', 'packages', $package_name]);
         // 包保存路径
-        $outpath          = 'public' . self::DS . 'packages' . self::DS;
-        $command_params[] = '--outpath=' . $outpath;
+        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'),'',$savepath).self::DS;
         // 执行解包
         try {
             Console::call('zip:pack', $command_params);
@@ -252,5 +255,4 @@ EOT
             'public' => Env::get('root_path') . self::DS . 'public',
         ];
     }
-
 }
