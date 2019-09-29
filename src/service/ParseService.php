@@ -25,6 +25,7 @@ class ParseService
 
             return ParseService::parse($args[0], $layer, $namespace);
         } elseif (strtolower($method) == 'parsename') {
+
             $namespace = isset($args[1]) ? $args[1] : null;
 
             return ParseService::parse($args[0], null, $namespace);

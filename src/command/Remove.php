@@ -129,7 +129,7 @@ class Remove extends Command
     protected function removeEmptyDir($dir)
     {
         // 只包含.和..,判断为空
-        if (count(scandir($dir)) == 2) {
+        if (is_dir($dir) && count(scandir($dir)) == 2) {
             FileUtil::unlinkDir($dir);
             $this->removeEmptyDir(dirname($dir));
         }
@@ -171,6 +171,9 @@ class Remove extends Command
     {
         static $files;
         foreach ($package_dir as $path => $topath) {
+            if(!is_dir($path)){
+                continue;
+            }
             // 打开目录
             $dh = opendir($path);
             // 循环读取目录

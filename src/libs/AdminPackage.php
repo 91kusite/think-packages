@@ -23,9 +23,9 @@ class AdminPackage extends Admin
     public function setPackageStatic($files = [])
     {
         // 配置加载组件的静态资源
-        $css                                    = isset($files['css']) ? implode(',', $files['css']) : '';
+        $css                                    = isset($files['css']) ? implode('@', $files['css']) : '';
         $css && $this->assignList['packageCss'] = '/static/libs/mini/packages.php?&m=' . $css;
-        $js                                     = isset($files['js']) ? implode(',', $files['js']) : '';
+        $js                                     = isset($files['js']) ? implode('@', $files['js']) : '';
         $js && $this->assignList['packageJs']   = '/static/libs/mini/packages.php?t=js&m=' . $js;
     }
 }

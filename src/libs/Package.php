@@ -87,14 +87,14 @@ class Package
             // 获取模板文件名
             $template = $template . '.' . Config::get('template.view_suffix');
         }
-        // 存在自定义组件配置时进行合并
-        if (isset($this->packages[$this->packageName])) {
-            $config                             = array_merge($this->data, $this->packages[$this->packageName]);
-            $this->packages[$this->packageName] = $config;
-        } else {
-            $this->packages[$this->packageName] = $this->data;
-        }
-        $this->assign($this->packages);
+        // // 存在自定义组件配置时进行合并
+        // if (isset($this->packages[$this->packageName])) {
+        //     $config                             = array_merge($this->data, $this->packages[$this->packageName]);
+        //     $this->packages[$this->packageName] = $config;
+        // } else {
+        //     $this->packages[$this->packageName] = $this->data;
+        // }
+        // $this->assign($this->packages);
 
         return $this->view->fetch($this->viewPath . $template, $vars, $config);
     }

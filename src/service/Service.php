@@ -72,12 +72,11 @@ class Service
      */
     public static function getInstance($package = null, $layer = null, $namespace = null)
     {
-        $classname = CheckService::isCallable($package);
+        $classname = CheckService::isCallable($package, $layer, $namespace);
         if (false === $classname) {
             // 不能调用,抛出错误
             throw new NotCallableException('目标组件不可调用');
         }
-
         $namespace = ParseService::parse($package, $layer, $namespace);
         if (isset(Service::$instances[$namespace])) {
             return Service::$instances[$namespace];

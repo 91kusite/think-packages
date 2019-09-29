@@ -13,9 +13,9 @@ class CheckService
      * @param    string $package 组件名称
      * @return   boolean
      */
-    public static function isExist($package): bool
+    public static function isExist($package, $layer = null, $namespace = null): bool
     {
-        $class = ParseService::parsetoController($package);
+        $class = ParseService::parse($package, $layer, $namespace);
 
         return class_exists($class);
     }
@@ -27,7 +27,7 @@ class CheckService
      * @param    string $package   组件名称
      * @return   boolean
      */
-    public static function isCallable($package): bool
+    public static function isCallable($package, $layer = null, $namespace = null): bool
     {
         if (!self::isExist($package)) {
             return false;
