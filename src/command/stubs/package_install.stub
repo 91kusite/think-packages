@@ -1,0 +1,41 @@
+<?php
+
+namespace packages\{%namespace%};
+
+use kusite\package\libs\Install;
+
+class {%className%} extends Install
+{
+    /**
+     * 配置当前组件
+     * @Author   Martinsun<syh@sunyonghong.com>
+     * @DateTime 2019-04-03
+     */
+    protected function configure()
+    {
+        return [
+            // 组件标识,需与目录一致
+            'name'    => '{%name%}',
+            // 组件名称
+            'title'   => '{%title%}',
+            // 组件版本
+            'version' => '{%version%}',
+        ];
+    }
+
+    public function install()
+    {
+    }
+
+    public function uninstall()
+    {
+    }
+
+    public function enable()
+    {
+    }
+
+    public function disable()
+    {
+    }
+}
