@@ -112,21 +112,23 @@ EOT
         }
         // 检测当前包是否在/src/packages中存在前端部分代码(复制非已经打包的目录以及文件)
         $package_path = PACKAGE_PATH . $package_name;
-        // 打开目录
-        $dh = opendir($package_path);
-        // 循环读取目录
-        while (($file = readdir($dh)) !== false) {
-            // 过滤掉当前目录'.'和上一级目录'..'
-            if ($file == '.' || $file == '..') {
-                continue;
-            }
-            if (is_dir($package_path . self::DS . $file) && !is_dir($temppath . self::DS . $file)) {
-                FileUtil::copyDir($package_path . self::DS . $file, $temppath . self::DS . $file);
-                continue;
-            }
+        if(file_exists($package_path)){
+            // 打开目录
+            $dh = opendir($package_path);
+            // 循环读取目录
+            while (($file = readdir($dh)) !== false) {
+                // 过滤掉当前目录'.'和上一级目录'..'
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+                if (is_dir($package_path . self::DS . $file) && !is_dir($temppath . self::DS . $file)) {
+                    FileUtil::copyDir($package_path . self::DS . $file, $temppath . self::DS . $file);
+                    continue;
+                }
 
-            if (!is_file($temppath . self::DS . $file)) {
-                FileUtil::copyFile($package_path . self::DS . $file, $temppath . self::DS . $file);
+                if (!is_file($temppath . self::DS . $file)) {
+                    FileUtil::copyFile($package_path . self::DS . $file, $temppath . self::DS . $file);
+                }
             }
         }
         // 生成.ini配置文件(强制覆盖)
