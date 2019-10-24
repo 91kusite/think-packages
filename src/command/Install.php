@@ -2,6 +2,7 @@
 namespace kusite\package\command;
 
 use app\common\helper\util\FileUtil;
+use kusite\package\libs\Db as PackageDb;
 use think\Console;
 use think\console\Command;
 use think\console\Input;
@@ -10,7 +11,6 @@ use think\console\input\Option;
 use think\console\Output;
 use think\Exception;
 use think\facade\Env;
-use kusite\package\libs\Db as PackageDb;
 
 class Install extends Command
 {
@@ -134,8 +134,8 @@ EOT
             $class = 'packages\\' . $package_name . '\\' . ucfirst($package_name);
             if (class_exists($class)) {
                 $packageObj = new $class();
-                
-                $version    = $packageObj->getConfigure('version');
+
+                $version = $packageObj->getConfigure('version');
                 // 复制目录
                 $dirs        = $this->getCopyDir();
                 $package_dir = PACKAGE_PATH . $package_name . self::DS;
@@ -146,23 +146,13 @@ EOT
                 }
 
                 // 导入安装sql
-                PackageDb::executeSqlFile($package_dir.'install.sql');
+                PackageDb::executeSqlFile($package_dir . 'install.sql');
                 // 执行组件安装自定义方法
                 $packageObj->install();
 
             } else {
                 throw new Exception('install error');
             }
-
-            // 静态文件处理
-            // $static_dir = Env::get('root_path') . self::DS . $outpath . self::DS . 'static';
-            // if (is_dir($static_dir)) {
-            //     $out_static_dir = implode(self::DS, [Env::get('root_path'), 'public','static', 'packages', $package_name]);
-            //     if (!is_dir($out_static_dir)) {
-            //         mkdir($out_static_dir, 0755, true);
-            //     }
-            //     FileUtil::moveDir($static_dir, $out_static_dir, true);
-            // }
 
             $log[$package_name] = $version;
         } catch (Exception $e) {
@@ -207,7 +197,7 @@ EOT
         // 打包路径
         $command_params[] = implode(self::DS, ['src', 'packages', $package_name]);
         // 包保存路径
-        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'),'',$savepath).self::DS;
+        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'), '', $savepath) . self::DS;
         // 执行解包
         try {
             Console::call('zip:pack', $command_params);
@@ -251,8 +241,8 @@ EOT
     public function getCopyDir()
     {
         return [
-            'admin'  => Env::get('app_path') . self::DS . 'admin',
-            'public' => Env::get('root_path') . self::DS . 'public',
+            'application' => Env::get('app_path'),
+            'public'      => Env::get('root_path') . self::DS . 'public',
         ];
     }
 }

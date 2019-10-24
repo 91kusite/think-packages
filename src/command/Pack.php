@@ -64,55 +64,10 @@ EOT
         FileUtil::createDir($temppath);
         // 整理需要打包的文件并输出到临时目录
         $dirs = $this->getCopySources();
-        foreach ($dirs as $root => $dir) {
-            if (!is_dir($dir)) {
-                continue;
-            }
-            // 打开目录
-            $dh = opendir($dir);
-            // 循环读取目录
-            while (($file = readdir($dh)) !== false) {
-
-                // 过滤掉当前目录'.'和上一级目录'..'
-                if ($file == '.' || $file == '..') {
-                    continue;
-                }
-
-                $current = $dir . self::DS . $file;
-                // 打包仅仅打包目录下面的文件
-                if (!is_dir($current)) {
-                    continue;
-                }
-
-                // 如果该文件是一个目录，且存在包名相同的目录
-                $_path = $file . self::DS . parse_name($package_name, 1, false);
-                if (is_dir($dir . self::DS . $_path)) {
-                    // 需要复制该目录
-                    $to = $this->getCopyToPath($root, $temppath, $_path, $dir);
-                    FileUtil::copyDir($dir . self::DS . $_path, $to);
-                    continue;
-                }
-                // 如果该文件是一个目录,且包含了与包名相同的php文件
-                if (is_file($dir . self::DS . $_path . '.php')) {
-                    $to = $this->getCopyToPath($root, $temppath, $_path . '.php', $dir);
-                    FileUtil::copyFile($dir . self::DS . $_path . '.php', $to);
-                    continue;
-                }
-                // 如果该文件是一个目录,且为小写的包名目录
-                $_path = $file . self::DS . parse_name($package_name);
-                if (is_dir($dir . self::DS . $_path)) {
-                    // 需要复制该目录
-                    $to = $this->getCopyToPath($root, $temppath, $_path, $dir);
-                    FileUtil::copyDir($dir . self::DS . $_path, $to);
-                    continue;
-                }
-            }
-            // 关闭目录
-            closedir($dh);
-        }
+        $this->copySources($this->getCopySources(), $temppath, $package_name);
         // 检测当前包是否在/src/packages中存在前端部分代码(复制非已经打包的目录以及文件)
         $package_path = PACKAGE_PATH . $package_name;
-        if(file_exists($package_path)){
+        if (file_exists($package_path)) {
             // 打开目录
             $dh = opendir($package_path);
             // 循环读取目录
@@ -121,13 +76,16 @@ EOT
                 if ($file == '.' || $file == '..') {
                     continue;
                 }
+                // 目录整体复制
                 if (is_dir($package_path . self::DS . $file) && !is_dir($temppath . self::DS . $file)) {
                     FileUtil::copyDir($package_path . self::DS . $file, $temppath . self::DS . $file);
                     continue;
                 }
 
+                // 文件单个复制
                 if (!is_file($temppath . self::DS . $file)) {
                     FileUtil::copyFile($package_path . self::DS . $file, $temppath . self::DS . $file);
+                    continue;
                 }
             }
         }
@@ -217,26 +175,57 @@ EOT
     {
         // 下标为replace_开头的,会替换root_path,并截取其后的路径为输出目录结构,否则直接取当前下标为输出目录
         return [
-            'admin'               => Env::get('app_path') . 'admin',
-            'replace_root_public' => Env::get('root_path') . implode(self::DS, ['public', 'static', 'apps', 'admin']),
+            'application'                  => Env::get('app_path'),
+            'public' . self::DS . 'static' => Env::get('root_path') . 'public' . self::DS . 'static' . self::DS,
         ];
     }
 
     /**
-     * 获取复制的输出目录
+     * 复制资源
      * @Author   Martinsun<syh@sunyonghong.com>
-     * @DateTime 2019-10-09
-     * @param    [type]                         $root     输出目录根目录规则,如果开头为replace_root_则会替换根目录
-     * @param    [type]                         $temppath 输出的临时目录
-     * @param    [type]                         $subpath  相对于临时目录的保存路径
-     * @param    [type]                         $oldpath  源目录
+     * @DateTime 2019-10-23
+     * @param    [type]                         $dirs         [description]
+     * @param    [type]                         $temppath     [description]
+     * @param    [type]                         $package_name [description]
+     * @return   [type]                                       [description]
      */
-    protected function getCopyToPath($root, $temppath, $subpath, $oldpath)
+    protected function copySources($dirs, $temppath, $package_name)
     {
-        if (stripos($root, 'replace_root_') === 0) {
-            return str_replace(Env::get('root_path'), $temppath . self::DS, $oldpath . self::DS . $subpath);
-        } else {
-            return $temppath . self::DS . $root . self::DS . $subpath;
+        foreach ($dirs as $root => $dir) {
+            if (!is_dir($dir)) {
+                continue;
+            }
+            // 打开目录
+            $dh = opendir($dir);
+            // 循环读取目录
+            while (($file = readdir($dh)) !== false) {
+
+                // 过滤掉当前目录'.'和上一级目录'..'
+                if ($file == '.' || $file == '..') {
+                    continue;
+                }
+
+                $current = $dir . $file;
+                if (is_dir($current)) {
+                    // 检测当前文件是否与包名同名或小写目录名称
+                    if ($file == parse_name($package_name, 1, false) || $file == parse_name($package_name)) {
+                        FileUtil::copyDir($current, $temppath . self::DS . $root . self::DS . $file);
+                        continue;
+                    }
+                    // 否则就遍历目录
+                    $this->copySources([$root . self::DS . $file => $current . self::DS], $temppath, $package_name);
+                    continue;
+                } else {
+                    $filename = pathinfo($file, PATHINFO_FILENAME);
+                    // 文件同名或小写
+                    if ($filename == parse_name($package_name, 1, false) || $filename == parse_name($package_name)) {
+                        FileUtil::copyFile($current, $temppath . self::DS . $root . self::DS . $file, true);
+                        continue;
+                    }
+                }
+            }
+            // 关闭目录
+            closedir($dh);
         }
     }
 

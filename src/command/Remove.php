@@ -2,6 +2,7 @@
 namespace kusite\package\command;
 
 use app\common\helper\util\FileUtil;
+use kusite\package\libs\Db as PackageDb;
 use think\Console;
 use think\console\Command;
 use think\console\Input;
@@ -10,7 +11,6 @@ use think\console\input\Option;
 use think\console\Output;
 use think\facade\Cache;
 use think\facade\Env;
-use kusite\package\libs\Db as PackageDb;
 
 class Remove extends Command
 {
@@ -77,7 +77,7 @@ class Remove extends Command
         try {
             $packageObj = new $class();
             // 执行卸载sql
-            PackageDb::executeSqlFile($package_path.self::DS.'uninstall.sql');
+            PackageDb::executeSqlFile($package_path . self::DS . 'uninstall.sql');
             // 执行组件卸载
             $packageObj->uninstall();
             $packagename = $packageObj->getPackageName();
@@ -153,7 +153,7 @@ class Remove extends Command
         // 打包路径
         $command_params[] = implode(self::DS, ['src', 'packages', $package_name]);
         // 包保存路径
-        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'),'',$savepath).self::DS;
+        $command_params[] = '--outpath=' . str_replace(Env::get('root_path'), '', $savepath) . self::DS;
         // 执行解包
         try {
             Console::call('zip:pack', $command_params);
@@ -171,7 +171,7 @@ class Remove extends Command
     {
         static $files;
         foreach ($package_dir as $path => $topath) {
-            if(!is_dir($path)){
+            if (!is_dir($path)) {
                 continue;
             }
             // 打开目录
@@ -186,10 +186,10 @@ class Remove extends Command
 
                 // 如果该文件是一个目录，则进入递归
                 if (is_dir($path . self::DS . $file)) {
-                    $this->getCopyFiles([$path . self::DS . $file => $topath . self::DS . $file]);
+                    $this->getCopyFiles([$path . self::DS . $file => $topath . $file . self::DS]);
                 } else {
                     // 如果不是一个目录，则将其删除
-                    $files[$path . self::DS . $file] = $topath . self::DS . $file;
+                    $files[$path . self::DS . $file] = $topath . $file;
                 }
             }
             // 退出循环后(此时已经删除所有了文件)，关闭目录并删除
@@ -208,8 +208,8 @@ class Remove extends Command
     public function getCopyDir($package_dir)
     {
         return [
-            $package_dir . self::DS . 'admin'  => Env::get('app_path') . self::DS . 'admin',
-            $package_dir . self::DS . 'public' => Env::get('root_path') . self::DS . 'public',
+            $package_dir . self::DS . 'application' => Env::get('app_path'),
+            $package_dir . self::DS . 'public'      => Env::get('root_path') . self::DS . 'public' . self::DS,
         ];
     }
 
